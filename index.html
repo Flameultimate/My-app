@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HealthCare+ — Patient Dashboard</title>
+<style>
+  :root{
+    --bg:#0f172a;           /* slate-900 */
+    --card:#0b1227;         /* deep panel */
+    --muted:#94a3b8;        /* slate-400 */
+    --text:#e2e8f0;         /* slate-200 */
+    --brand:#60a5fa;        /* blue-400 */
+    --brand-2:#34d399;      /* emerald-400 */
+    --danger:#f87171;       /* red-400 */
+    --ok:#4ade80;           /* green-400 */
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:linear-gradient(135deg,#0b1023 0%, #0f172a 60%, #111827 100%);
+    color:var(--text); font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;
+  }
+  header{
+    position:sticky; top:0; z-index:5;
+    backdrop-filter: blur(8px);
+    background:rgba(15,23,42,.6);
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 20px;display:flex;gap:14px;align-items:center}
+  .logo{font-weight:800;letter-spacing:.3px}
+  .pill{font-size:12px;padding:4px 8px;border:1px solid rgba(255,255,255,.15);border-radius:999px;color:var(--muted)}
+  main{max-width:1100px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+  @media (max-width: 900px){ main{grid-template-columns:1fr} }
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+  h1{margin:0;font-size:22px;font-weight:800}
+  h2{margin:0 0 12px;font-size:16px;font-weight:700;color:#dbeafe}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  input,select,button,textarea{
+    width:100%;background:#0a0f22;border:1px solid rgba(255,255,255,.12);
+    color:var(--text); padding:10px 12px;border-radius:10px;outline:none;
+    transition: border .2s, transform .06s ease;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+  button{cursor:pointer;font-weight:700}
+  .btn{background:linear-gradient(135deg,var(--brand) 0%, #8abefe 100%); border:none; color:#06121f}
+  .btn:active{transform:translateY(1px)}
+  .btn-ghost{background:transparent}
+  .badge{display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.18);color:var(--muted)}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{
+    display:grid;grid-template-columns:24px 1fr auto auto;gap:10px;align-items:center;
+    padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#0a0f22;
+  }
+  .item.taken{opacity:.55;text-decoration:line-through}
+  .when{font-size:12px;color:var(--muted)}
+  .next{font-size:12px;color:#c7d2fe}
+  .divider{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+  .tips li{margin:6px 0}
+  .muted{color:var(--muted);font-size:13px}
+  .success{color:var(--ok)}
+  .danger{color:var(--danger)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="logo">💙 HealthCare+</div>
+      <span class="pill">After-discharge meds & routine reminders</span>
+      <div style="flex:1"></div>
+      <button id="notifyBtn" class="btn" style="max-width:220px">🔔 Enable Notifications</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT COLUMN -->
+    <section class="card">
+      <h2>Patient Info</h2>
+      <div class="row">
+        <div>
+          <label>Full name</label>
+          <input id="pName" placeholder="Type patient name…" />
+        </div>
+        <div>
+          <label>Age</label>
+          <input id="pAge" type="number" min="0" placeholder="Eg. 32" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>Condition</label>
+          <select id="pCond">
+            <option value="fever">Fever</option>
+            <option value="cold">Common Cold</option>
+            <option value="bp">High Blood Pressure</option>
+            <option value="diabetes">Diabetes</option>
+            <option value="postop">Post-surgery Recovery</option>
+          </select>
+        </div>
+        <div>
+          <label>Contact (optional)</label>
+          <input id="pContact" placeholder="Phone / Email" />
+        </div>
+      </div>
+      <div style="margin-top:12px" class="grid2">
+        <button id="savePatient" class="btn">💾 Save Profile</button>
+        <button id="clearAll" class="btn-ghost">🗑️ Reset App</button>
+      </div>
+      <div id="profileMsg" class="muted" style="margin-top:8px"></div>
+      <div class="divider"></div>
+      <div class="badge">👤 <span id="badgeName">No patient yet</span></div>
+      <span class="badge">🩺 <span id="badgeCond">—</span></span>
+      <span class="badge">🎯 Adherence: <span id="adherence">0%</span></span>
+    </section>
+
+    <!-- RIGHT COLUMN -->
+    <section class="card">
+      <h2>Medicine Schedule</h2>
+      <div class="row3">
+        <div>
+          <label>Pick medicine</label>
+          <select id="medPick">
+            <option>Paracetamol 500mg</option>
+            <option>ORS Solution</option>
+            <option>Vitamin C 500mg</option>
+            <option>Aspirin 75mg</option>
+            <option>Insulin (as prescribed)</option>
+          </select>
+        </div>
+        <div>
+          <label>Or custom name</label>
+          <input id="medName" placeholder="Type custom medicine…" />
+        </div>
+        <div>
+          <label>Time (24h)</label>
+          <input id="medTime" type="time" />
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <button id="addMed" class="btn">➕ Add Medicine</button>
+        <button id="addCommon" class="btn-ghost">✨ Quick add: 9:00, 15:00, 21:00</button>
+      </div>
+
+      <div class="divider"></div>
+      <div class="muted">Upcoming reminders (repeats daily):</div>
+      <div id="medList" class="list" style="margin-top:10px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Recovery Tips</h2>
+      <ul id="tips" class="tips"></ul>
+      <div class="divider"></div>
+      <button id="startMini" class="btn">🏃 Start 3-min Routine</button>
+      <div id="miniMsg" class="muted" style="margin-top:8px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Today’s Progress</h2>
+      <div id="progressMsg" class="muted">No logs yet.</div>
+      <div id="history" class="list" style="margin-top:10px"></div>
+    </section>
+  </main>
+
+  <!-- Beep sound (with fallback tone if blocked) -->
+  <audio id="beep" preload="auto"
+    src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<script>
+/* ---------- Simple state (with localStorage) ---------- */
+const SKEY = "hcplus_state_v1";
+let state = {
+  patient: { name:"", age:"", cond:"fever", contact:"" },
+  meds: [],        // {id,name,timeHHMM,takenToday:false}
+  logs: []         // {ts, text}
+};
+try{
+  const raw = localStorage.getItem(SKEY);
+  if (raw) state = JSON.parse(raw);
+}catch(e){}
+
+/* ---------- DOM helpers ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const save = () => localStorage.setItem(SKEY, JSON.stringify(state));
+
+/* ---------- Elements ---------- */
+const pName=$("#pName"), pAge=$("#pAge"), pCond=$("#pCond"), pContact=$("#pContact");
+const badgeName=$("#badgeName"), badgeCond=$("#badgeCond"), adherenceSpan=$("#adherence");
+const medPick=$("#medPick"), medName=$("#medName"), medTime=$("#medTime");
+const medList=$("#medList"), historyBox=$("#history"), progressMsg=$("#progressMsg");
+const tipsBox=$("#tips"), miniMsg=$("#miniMsg");
+
+/* ---------- Tips by condition ---------- */
+const TIPSETS = {
+  fever: ["💧 Drink 2-3L water","🛏️ Rest & sleep early","🌡️ Check temp every 6h","🍲 Light, warm meals"],
+  cold: ["🍵 Steam inhalation 10 min","🧣 Keep warm","😴 Extra sleep","🥤 Warm fluids frequently"],
+  bp: ["🚶 10-15 min walk","🧘 5-min breathing","🧂 Low salt today","🫀 Avoid stress triggers"],
+  diabetes: ["🏃 15-min light exercise","🍎 Avoid sugary drinks","⏱️ Eat on schedule","💉 Take insulin on time"],
+  postop: ["🚶 Gentle mobility","🧼 Keep wound clean/dry","💊 Pain meds on time","😴 Plenty of rest"]
+};
+
+/* ---------- Render functions ---------- */
+function renderProfile(){
+  pName.value = state.patient.name || "";
+  pAge.value  = state.patient.age  || "";
+  pCond.value = state.patient.cond || "fever";
+  pContact.value = state.patient.contact || "";
+  badgeName.textContent = state.patient.name ? state.patient.name : "No patient yet";
+  badgeCond.textContent = state.patient.cond.toUpperCase();
+  renderTips();
+  updateAdherence();
+}
+
+function renderTips(){
+  tipsBox.innerHTML = "";
+  (TIPSETS[state.patient.cond] || []).forEach(t=>{
+    const li=document.createElement("li"); li.textContent=t; tipsBox.appendChild(li);
+  });
+}
+
+function timeToNextMs(hhmm){
+  const [H,M] = hhmm.split(":").map(Number);
+  const now = new Date();
+  const t = new Date();
+  t.setHours(H,M,0,0);
+  let ms = t.getTime() - now.getTime();
+  if (ms < 0) ms += 86400000; // next day
+  return ms;
+}
+
+function fmtTime(hhmm){
+  const [H,M]=hhmm.split(":").map(Number);
+  const d=new Date(); d.setHours(H,M,0,0);
+  return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+}
+
+function renderMeds(){
+  medList.innerHTML = "";
+  if (!state.meds.length){
+    medList.innerHTML = `<div class="muted">No medicines yet. Add one above.</div>`;
+    return;
+  }
+  state.meds
+    .sort((a,b)=> a.time.localeCompare(b.time))
+    .forEach(m=>{
+      const div=document.createElement("div");
+      div.className="item"+(m.takenToday?" taken":"");
+      div.innerHTML=`
+        <input type="checkbox" ${m.takenToday?"checked":""} data-id="${m.id}" />
+        <div>
+          <div><strong>${m.name}</strong></div>
+          <div class="when">⏰ ${fmtTime(m.time)}</div>
+        </div>
+        <div class="next">in ${Math.round(timeToNextMs(m.time)/60000)} min</div>
+        <button data-del="${m.id}" class="btn-ghost" style="width:auto;padding:8px 10px">Remove</button>
+      `;
+      medList.appendChild(div);
+    });
+}
+
+function renderLogs(){
+  historyBox.innerHTML="";
+  if (!state.logs.length){ progressMsg.textContent="No logs yet."; return; }
+  progressMsg.textContent=`${new Date().toLocaleDateString()} — ${state.logs.length} reminder(s) today`;
+  state.logs.slice(-10).reverse().forEach(l=>{
+    const d=document.createElement("div");
+    d.className="item";
+    d.style.gridTemplateColumns="1fr auto";
+    d.innerHTML=`<div>${l.text}</div><div class="when">${new Date(l.ts).toLocaleTimeString()}</div>`;
+    historyBox.appendChild(d);
+  });
+}
+
+function updateAdherence(){
+  const total = state.meds.length;
+  const taken = state.meds.filter(m=>m.takenToday).length;
+  adherenceSpan.textContent = total? Math.round((taken/total)*100)+"%":"0%";
+}
+
+/* ---------- Scheduling & notifications ---------- */
+const timers = new Map();
+
+function requestNotif(){
+  if (!("Notification" in window)) return alert("Notifications not supported in this browser.");
+  Notification.requestPermission().then(p=>{
+    $("#notifyBtn").textContent = (p==="granted"?"✅ Notifications Enabled":"🔔 Enable Notifications");
+  });
+}
+$("#notifyBtn").addEventListener("click", requestNotif);
+
+function beep(){
+  const a=$("#beep");
+  const playFallback = ()=>{ // generate tone if audio blocked
+    try{
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      const osc=ctx.createOscillator(); const g=ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination); osc.type="sine"; osc.frequency.value=880;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.15, ctx.currentTime+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+.35);
+      osc.start(); osc.stop(ctx.currentTime+.4);
+    }catch(e){}
+  };
+  a.currentTime=0;
+  a.play().catch(playFallback);
+}
+
+function notifyWithTip(med){
+  const tips = TIPSETS[state.patient.cond] || ["💧 Stay hydrated"];
+  const msg = `💊 Take ${med.name} — Tip: ${tips[Math.floor(Math.random()*tips.length)]}`;
+  if (Notification.permission==="granted"){
+    new Notification("Medication Reminder", { body: msg });
+  }
+  beep();
+  alert(msg); // fallback so they can’t miss it
+  // log + mark today
+  med.takenToday = true;
+  state.logs.push({ts:Date.now(), text:`Taken: ${med.name}`});
+  save();
+  renderMeds(); renderLogs(); updateAdherence();
+}
+
+function scheduleMed(med){
+  // clear old timer
+  if (timers.has(med.id)) { clearTimeout(timers.get(med.id)); }
+  const ms = timeToNextMs(med.time);
+  const id = setTimeout(function trigger(){
+    notifyWithTip(med);
+    // reschedule for next day
+    scheduleMed(med);
+  }, ms);
+  timers.set(med.id, id);
+}
+
+function rescheduleAll(){
+  state.meds.forEach(m=>scheduleMed(m));
+}
+
+/* ---------- Event handlers ---------- */
+$("#savePatient").addEventListener("click", ()=>{
+  state.patient.name=pName.value.trim();
+  state.patient.age=pAge.value.trim();
+  state.patient.cond=pCond.value;
+  state.patient.contact=pContact.value.trim();
+  save(); renderProfile();
+  $("#profileMsg").innerHTML = `<span class="success">Saved!</span>`;
+  setTimeout(()=>$("#profileMsg").textContent="",1200);
+});
+
+$("#clearAll").addEventListener("click", ()=>{
+  if (!confirm("Reset everything?")) return;
+  localStorage.removeItem(SKEY);
+  location.reload();
+});
+
+$("#addCommon").addEventListener("click", ()=>{
+  const base = medName.value.trim() || medPick.value;
+  [["09:00"],["15:00"],["21:00"]].forEach(([t])=>{
+    addMed(base, t);
+  });
+});
+
+$("#addMed").addEventListener("click", ()=>{
+  const name = medName.value.trim() || medPick.value;
+  const t = medTime.value;
+  if (!name || !t) return alert("Select a time and medicine.");
+  addMed(name, t);
+  medName.value=""; medTime.value="";
+});
+
+function addMed(name, t){
+  const med={ id:crypto.randomUUID(), name, time:t, takenToday:false };
+  state.meds.push(med); save();
+  renderMeds(); updateAdherence(); scheduleMed(med);
+}
+
+/* Taken checkbox & delete */
+medList.addEventListener("change",(e)=>{
+  const id=e.target.getAttribute("data-id");
+  if (!id) return;
+  const med=state.meds.find(m=>m.id===id);
+  if (med){ med.takenToday = e.target.checked; save(); renderMeds(); updateAdherence(); }
+});
+medList.addEventListener("click",(e)=>{
+  const del=e.target.getAttribute("data-del");
+  if (!del) return;
+  state.meds = state.meds.filter(m=>m.id!==del);
+  if (timers.has(del)) clearTimeout(timers.get(del));
+  save(); renderMeds(); updateAdherence();
+});
+
+/* Mini 3-min routine */
+$("#startMini").addEventListener("click", async ()=>{
+  const setMsg = (t)=> miniMsg.textContent=t;
+  setMsg("⏱️ 60s breathing…");
+  await wait(60000);
+  setMsg("🚶 90s light walking…");
+  await wait(90000);
+  setMsg("💧 30s hydrate & stretch…");
+  await wait(30000);
+  setMsg("✅ Done! Great job.");
+});
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ---------- Daily reset of 'takenToday' at midnight ---------- */
+(function dailyReset(){
+  const now=new Date(); const next=new Date();
+  next.setHours(24,0,0,0);
+  setTimeout(()=>{
+    state.meds.forEach(m=>m.takenToday=false);
+    save(); renderMeds(); updateAdherence();
+    dailyReset();
+  }, next.getTime()-now.getTime());
+})();
+
+/* ---------- Initial render ---------- */
+renderProfile(); renderMeds(); renderLogs(); rescheduleAll();
+requestNotif(); // ask once on load
+</script>
+</body>
+</html>
